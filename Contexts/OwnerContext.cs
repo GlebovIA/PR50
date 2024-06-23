@@ -1,6 +1,7 @@
 ﻿using Microsoft.Office.Interop.Word;
 using PR50.Models;
 using System.Collections.Generic;
+using System.Linq;
 using Word = Microsoft.Office.Interop.Word;
 namespace PR50.Contexts
 {
@@ -14,16 +15,16 @@ namespace PR50.Contexts
             allOwners.Add(new OwnerContext("Смирнов", "Алексей", "Владимирович", 2));
             allOwners.Add(new OwnerContext("Кузнецова", "Анна", "Сергеевна", 3));
             allOwners.Add(new OwnerContext("Павлов", "Дмитрий", "Александрович", 3));
-            allOwners.Add(new OwnerContext("Михайлова", "Ольга", "Иванавна", 4));
+            allOwners.Add(new OwnerContext("Михайлова", "Ольга", "Ивановна", 4));
             allOwners.Add(new OwnerContext("Козлов", "Артем", "Олегович", 5));
-            allOwners.Add(new OwnerContext("Соколова", "наталья", "Викторовна", 6));
+            allOwners.Add(new OwnerContext("Соколова", "Наталья", "Викторовна", 6));
             allOwners.Add(new OwnerContext("Лебедев", "Игорь", "Андреевич", 6));
             allOwners.Add(new OwnerContext("Федорова", "Екатерина", "Дмитриевна", 7));
             allOwners.Add(new OwnerContext("Александров", "Андрей", "Игоревич", 7));
             allOwners.Add(new OwnerContext("Степанова", "Оксана", "Николаевна", 8));
             allOwners.Add(new OwnerContext("Никитин", "Сергей", "Васильевич", 9));
             allOwners.Add(new OwnerContext("Ковалева", "Мария", "Александровна", 10));
-            allOwners.Add(new OwnerContext("Фролов", "Павел", "Михаилович", 11));
+            allOwners.Add(new OwnerContext("Фролов", "Павел", "Михайлович", 11));
             allOwners.Add(new OwnerContext("Белова", "Елена", "Александровна", 12));
             allOwners.Add(new OwnerContext("Поляков", "Илья", "Данилович", 13));
             allOwners.Add(new OwnerContext("Гаврилова", "Анастасия", "Валерьевна", 14));
@@ -64,7 +65,7 @@ namespace PR50.Contexts
             count.Range.InsertParagraphAfter();
 
             Word.Paragraph table = document.Paragraphs.Add();
-            Word.Table payments = document.Tables.Add(table.Range, AllOwners().Count + 1, 4);
+            Word.Table payments = document.Tables.Add(table.Range, AllOwners().OrderBy(x => x.NumberRoom).ToArray().Last().NumberRoom + 1, 4);
             payments.Borders.InsideLineStyle = payments.Borders.OutsideLineStyle = Word.WdLineStyle.wdLineStyleSingle;
             payments.Range.Cells.VerticalAlignment = Word.WdCellVerticalAlignment.wdCellAlignVerticalCenter;
 
@@ -73,13 +74,43 @@ namespace PR50.Contexts
             Cell("Имя", payments.Cell(1, 3).Range);
             Cell("Отчество", payments.Cell(1, 4).Range);
 
-            for (int i = 1; i <= AllOwners().Count; i++)
+            string surnames = "";
+            string names = "";
+            string lastnames = "";
+            int cell = 2;
+            List<OwnerContext> All = AllOwners().OrderBy(x => x.NumberRoom).ToList();
+            int currentRoom = All[0].NumberRoom;
+            for (int i = 0; i < All.Count; i++)
             {
-                OwnerContext owner = AllOwners()[i];
-                Cell((i).ToString(), payments.Cell(1 + i, 1).Range);
-                Cell(owner.Surname, payments.Cell(1 + i, 2).Range, Word.WdParagraphAlignment.wdAlignParagraphLeft);
-                Cell(owner.Name, payments.Cell(1 + i, 3).Range, Word.WdParagraphAlignment.wdAlignParagraphLeft);
-                Cell(owner.Lastname, payments.Cell(1 + i, 4).Range, Word.WdParagraphAlignment.wdAlignParagraphLeft);
+                if (All[i].NumberRoom != currentRoom && i != 0)
+                {
+                    Cell((currentRoom).ToString(), payments.Cell(cell, 1).Range);
+                    Cell(surnames, payments.Cell(cell, 2).Range, Word.WdParagraphAlignment.wdAlignParagraphLeft);
+                    Cell(names, payments.Cell(cell, 3).Range, Word.WdParagraphAlignment.wdAlignParagraphLeft);
+                    Cell(lastnames, payments.Cell(cell, 4).Range, Word.WdParagraphAlignment.wdAlignParagraphLeft);
+                    currentRoom = All[i].NumberRoom;
+                    surnames = "";
+                    names = "";
+                    lastnames = "";
+                    cell++;
+                }
+                if (surnames != "")
+                {
+                    surnames += "\n";
+                    names += "\n";
+                    lastnames += "\n";
+                }
+                surnames += All[i].Surname;
+                names += All[i].Name;
+                lastnames += All[i].Lastname;
+                if (i == All.Count - 1)
+                {
+                    Cell((currentRoom).ToString(), payments.Cell(cell, 1).Range);
+                    Cell(surnames, payments.Cell(cell, 2).Range, Word.WdParagraphAlignment.wdAlignParagraphLeft);
+                    Cell(names, payments.Cell(cell, 3).Range, Word.WdParagraphAlignment.wdAlignParagraphLeft);
+                    Cell(lastnames, payments.Cell(cell, 4).Range, Word.WdParagraphAlignment.wdAlignParagraphLeft);
+                }
+
             }
             document.SaveAs2(fileName);
             document.Close();
