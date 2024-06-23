@@ -19,7 +19,7 @@ namespace PR50.Elements
         {
             List<OwnerContext> roomOwners = OwnerContext.AllOwners().FindAll(x => x.NumberRoom == Room);
             foreach (OwnerContext roomOwner in roomOwners)
-                Parent.Children.Add(new Elements.Ower(roomOwner));
+                Parent.Children.Add(new Elements.Owner(roomOwner));
         }
     }
 }

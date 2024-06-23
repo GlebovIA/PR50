@@ -12,6 +12,7 @@ namespace PR50
         public MainWindow()
         {
             InitializeComponent();
+            LoadRooms();
         }
 
         private void Report(object sender, RoutedEventArgs e)
