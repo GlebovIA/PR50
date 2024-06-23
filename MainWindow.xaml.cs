@@ -1,17 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Microsoft.Win32;
+using PR50.Contexts;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace PR50
 {
@@ -23,6 +12,19 @@ namespace PR50
         public MainWindow()
         {
             InitializeComponent();
+        }
+
+        private void Report(object sender, RoutedEventArgs e)
+        {
+            SaveFileDialog sfd = new SaveFileDialog();
+            sfd.Filter = "Word Files (*.docx)|*.docx";
+            sfd.ShowDialog();
+            if (sfd.FileName != "") OwnerContext.Report(sfd.FileName);
+        }
+        public void LoadRooms()
+        {
+            for (int i = 1; i < 20; i++)
+                Parent.Children.Add(new Elements.Room(i));
         }
     }
 }
